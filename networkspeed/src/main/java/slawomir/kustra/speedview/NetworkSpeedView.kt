@@ -1,24 +1,20 @@
 package slawomir.kustra.speedview
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 
-
 internal class NetworkSpeedView : View {
 
-    private var viewWidth = 0f
-    private var viewHeight = 0f
+    private var colors = intArrayOf(Color.parseColor("#FFD0E9"),Color.parseColor("#FFD0E9"),   Color.parseColor("#9AE9FF"))
+    private var shader = SweepGradient(1080f, 1080f, colors, null)
 
-    val paint = Paint()
+    private val paint = Paint()
 
     private val ovalBackgroundShape = RectF()
-    var sweep = 0f
+
 
     constructor(context: Context) : super(context) {
         init()
@@ -35,13 +31,10 @@ internal class NetworkSpeedView : View {
         init()
     }
 
+
     override fun onDraw(canvas: Canvas) {
-        viewWidth = width.toFloat()
-        viewHeight = height.toFloat()
 
-        setBackgroundColor(Color.WHITE)
-
-        val radius = width / 3
+        val radius = width / 2.5
         val centerX = width / 2
         val centerY = height / 2
 
@@ -55,14 +48,14 @@ internal class NetworkSpeedView : View {
         val right = centerX + radius.toFloat()
         val bottom = centerY + radius.toFloat()
 
+
         ovalBackgroundShape.set(left, top, right, bottom)
-        canvas.drawArc(ovalBackgroundShape, 160f, 220f, false, paint)
+        paint.shader = shader
+        canvas.drawArc(ovalBackgroundShape, 140f, 260f, false, paint)
 
     }
 
     private fun init() {
         Log.d("NSV: ", "init")
-
     }
-
 }
