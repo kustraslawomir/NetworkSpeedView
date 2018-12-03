@@ -12,20 +12,13 @@ import android.view.View
 
 internal class NetworkSpeedView : View {
 
-    private lateinit var paint: Paint
+    private var viewWidth = 0f
+    private var viewHeight = 0f
 
-    private lateinit var circleView: RectF
+    val paint = Paint()
 
-    private val startAnglePoint = 180f
-    private val endAnglePoint = 180f
-
-    private val circleStrokeWidth = 200f
-
-    private val sweepValue = 2
-    private var sweep = 0
-
-    private var isAlive: Boolean = false
-
+    private val ovalBackgroundShape = RectF()
+    var sweep = 0f
 
     constructor(context: Context) : super(context) {
         init()
@@ -43,37 +36,33 @@ internal class NetworkSpeedView : View {
     }
 
     override fun onDraw(canvas: Canvas) {
-        Log.d("NSV onDraw: ", "width: $width height: $height")
+        viewWidth = width.toFloat()
+        viewHeight = height.toFloat()
 
-        circleView.left = width / 2f - 100f
-        circleView.top = height / 2f - 100
-        circleView.bottom = width / 2f + 100f
-        circleView.right = height  / 2f + 100f
+        setBackgroundColor(Color.WHITE)
 
-        canvas.drawArc(circleView, startAnglePoint, sweep.toFloat(), true, paint)
+        val radius = width / 3
+        val centerX = width / 2
+        val centerY = height / 2
 
-        sweep += sweepValue
+        paint.isAntiAlias = true
+        paint.color = Color.BLACK
+        paint.strokeWidth = 50f
+        paint.style = Paint.Style.STROKE
 
-        if (sweep > 180) {
-            isAlive = false
-        }
-        if (sweep > endAnglePoint) {
-            isAlive = false
-        }
+        val left = centerX - radius.toFloat()
+        val top = centerY - radius.toFloat()
+        val right = centerX + radius.toFloat()
+        val bottom = centerY + radius.toFloat()
 
-        if (isAlive) {
-            invalidate()
-        }
+        ovalBackgroundShape.set(left, top, right, bottom)
+        canvas.drawArc(ovalBackgroundShape, 160f, 220f, false, paint)
+
     }
 
     private fun init() {
         Log.d("NSV: ", "init")
-        circleView = RectF()
-        paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = circleStrokeWidth
-        paint.color = Color.RED
     }
 
 }
