@@ -9,10 +9,10 @@ import android.view.View
 internal class NetworkSpeedView : View {
 
     private var colors =
-            intArrayOf(Color.parseColor("#FFD0E9"), Color.parseColor("#FFD0E9"), Color.parseColor("#9AE9FF"))
+        intArrayOf(Color.parseColor("#FFD0E9"), Color.parseColor("#FFD0E9"), Color.parseColor("#9AE9FF"))
 
     private var linesColor =
-            intArrayOf(Color.parseColor("#FFF17FBC"), Color.parseColor("#FFF17FBC"), Color.parseColor("#FF47C0E2"))
+        intArrayOf(Color.parseColor("#FFF17FBC"), Color.parseColor("#FFF17FBC"), Color.parseColor("#FF47C0E2"))
 
     private var arcShader = SweepGradient(1080f, 1080f, colors, null)
     private var linesShader = SweepGradient(1080f, 1080f, linesColor, null)
@@ -32,8 +32,8 @@ internal class NetworkSpeedView : View {
     }
 
     constructor(context: Context, attributeSet: AttributeSet, defStyleAttr: Int) : super(
-            context, attributeSet,
-            defStyleAttr
+        context, attributeSet,
+        defStyleAttr
     ) {
         init()
     }
@@ -48,6 +48,7 @@ internal class NetworkSpeedView : View {
         paint.isAntiAlias = true
         paint.strokeWidth = 70f
         paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
 
         //arcLines.shader = linesShader
         arcLines.alpha = 0.6.toInt()
