@@ -1,4 +1,4 @@
-package themes.kustra.pl.myapplication
+package slawomir.kustra.speedview
 
 import android.content.Context
 import android.graphics.*
