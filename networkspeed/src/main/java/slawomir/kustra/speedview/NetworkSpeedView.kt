@@ -6,17 +6,35 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.graphics.SweepGradient
+import android.os.Handler
 import slawomir.kustra.utils.Gradients
+import java.lang.Exception
 
 
-internal class NetworkSpeedView : View {
+class NetworkSpeedView : View {
 
+    private var viewWidth = 0
+    private var viewHeight = 0
+    private var centerX = 0
+    private var centerY = 0
+    private var radius: Double = 0.0
+
+    private var lineLeft = 0f
+    private var lineTop = 0f
+    private var lineRight = 0f
+    private var lineBottom = 0f
 
     private val ovalPaint = Paint()
 
     private val arcLines = Paint()
 
     private val ovalBackgroundShape = RectF()
+
+    private val scaleMarkSize = resources.displayMetrics.density * 14
+
+    private val colors = Gradients.linesColor
+
+    var indicatorAngle = 0
 
     constructor(context: Context) : super(context) {
         init()
@@ -33,22 +51,9 @@ internal class NetworkSpeedView : View {
         init()
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        val s2 = (Math.min(w, h) - ovalPaint.strokeWidth) / 2f
-        val cx = w / 2f
-        val cy = h / 2f
-        ovalBackgroundShape.set(cx - s2, cy - s2, cx + s2, cy + s2)
-        val positions = floatArrayOf(0.0f, 0.75f)
-        val shader = SweepGradient(cx, cy, Gradients.arcGradientColors, positions)
-        val m = Matrix()
-        m.setRotate(135f, cx, cy)
-        shader.setLocalMatrix(m)
-        ovalPaint.shader = shader
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    private fun init() {
+        Log.d("NSV: ", "init")
+        colors.reverse()
 
         ovalPaint.isAntiAlias = true
         ovalPaint.strokeWidth = 70f
@@ -60,58 +65,74 @@ internal class NetworkSpeedView : View {
         arcLines.strokeCap = Paint.Cap.ROUND
     }
 
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        viewHeight = h
+        viewWidth = w
+
+        radius = viewWidth / 2.5
+        centerX = viewWidth / 2
+        centerY = viewHeight / 2
+
+        lineLeft = centerX - radius.toFloat()
+        lineTop = centerY - radius.toFloat()
+        lineRight = centerX + radius.toFloat()
+        lineBottom = centerY + radius.toFloat()
+
+        val s2 = (Math.min(viewWidth, viewHeight) - ovalPaint.strokeWidth) / 2f
+
+        val positions = floatArrayOf(0.0f, 0.75f)
+        val shader = SweepGradient(centerX.toFloat(), centerY.toFloat(), Gradients.arcGradientColors, positions)
+        val matrix = Matrix()
+        matrix.setRotate(135f, centerX.toFloat(), centerY.toFloat())
+        shader.setLocalMatrix(matrix)
+
+        ovalPaint.shader = shader
+
+        ovalBackgroundShape.set(centerX - s2, centerY - s2, centerX + s2, centerY + s2)
+    }
+
     override fun onDraw(canvas: Canvas) {
-
-        val radius = width / 2.5
-        val centerX = width / 2
-        val centerY = height / 2
-
-        val left = centerX - radius.toFloat()
-        val top = centerY - radius.toFloat()
-        val right = centerX + radius.toFloat()
-        val bottom = centerY + radius.toFloat()
-
-        val scaleMarkSize = resources.displayMetrics.density * 14
-
-        Log.e("NSV", "width: $width height: $height")
-        Log.e("NSV", "radius: $radius")
-        Log.e("NSV", "centerX: $centerX | centerY: $centerY")
-        Log.e("NSV", "left: $left | top: $top | right: $right | bottom: $bottom")
+        super.onDraw(canvas)
+        Log.e("NSV: ", "onDraw called")
         canvas.drawArc(ovalBackgroundShape, 160f, 220f, false, ovalPaint)
+        drawArcLines(canvas)
+        drawIndicator(canvas, indicatorAngle, Color.BLACK)
+    }
 
-        val colors = Gradients.linesColor
-        colors.reverse()
+    private fun drawArcLines(canvas: Canvas) {
         canvas.save()
         var counter = 46
         for (angle in 0..360) {
             if ((angle in 0..110 && angle % 5 == 0) || (angle in 250..360 && angle % 5 == 0)) {
-
-                Log.e("NSV:", "angle: $angle")
-                if (angle % 10 == 0) {
-                    arcLines.strokeWidth = 5f
-                }
-
-                arcLines.color = colors[counter]
-                counter--
-
-                val angle = Math.toRadians(angle.toDouble())
-                val startX = centerX + (radius + 65) * Math.sin(angle)
-                val startY = centerY - (radius + 65) * Math.cos(angle)
-                val stopX = centerX + ((radius + 65) - scaleMarkSize) * Math.sin(angle)
-                val stopY = centerY - ((radius + 65) - scaleMarkSize) * Math.cos(angle)
-                Log.e(
-                    "NSV:",
-                    "draw line on angle: $angle, startX: $startX  startY: $startY  stopX: $stopX  stopY: $stopY"
-                )
-
                 Log.e("NSV:", "counter : $counter")
-                canvas.drawLine(startX.toFloat(), startY.toFloat(), stopX.toFloat(), stopY.toFloat(), arcLines)
+                drawIndicator(canvas, angle, colors[counter])
+                counter--
             }
         }
         canvas.restore()
     }
 
-    private fun init() {
-        Log.d("NSV: ", "init")
+    private fun drawIndicator(canvas: Canvas, angle: Int, color: Int) {
+        try {
+            arcLines.color = color
+        } catch (e: Exception) {
+            Log.e("NSV: ", "error ${e.message}")
+        }
+
+        Log.d("NSV: ", "draw indicator: $angle")
+
+        val angleRadius = Math.toRadians(angle.toDouble())
+        val startX = centerX + (radius + 65) * Math.sin(angleRadius)
+        val startY = centerY - (radius + 65) * Math.cos(angleRadius)
+        val stopX = centerX + ((radius + 65) - scaleMarkSize) * Math.sin(angleRadius)
+        val stopY = centerY - ((radius + 65) - scaleMarkSize) * Math.cos(angleRadius)
+        Log.e("NSV:", "draw line on angle: $angle, startX: $startX  startY: $startY  stopX: $stopX  stopY: $stopY")
+        canvas.drawLine(startX.toFloat(), startY.toFloat(), stopX.toFloat(), stopY.toFloat(), arcLines)
+    }
+
+    fun refreshUi() {
+        invalidate()
     }
 }
