@@ -66,7 +66,7 @@ class NetworkSpeedView : View {
 
         indicatorLine.strokeWidth = 9f
         indicatorLine.strokeCap = Paint.Cap.ROUND
-        indicatorLine.color = Color.WHITE
+        indicatorLine.color = Color.parseColor("#607D8B")
     }
 
 
