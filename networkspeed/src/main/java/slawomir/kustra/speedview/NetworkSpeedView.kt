@@ -6,9 +6,9 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.graphics.SweepGradient
-import android.os.Handler
 import slawomir.kustra.utils.Gradients
-import java.lang.Exception
+import slawomir.kustra.utils.Utils.INDICATOR_RADIUS_MARGIN
+import slawomir.kustra.utils.Utils.LINE_RADIUS_MARGIN
 
 
 class NetworkSpeedView : View {
@@ -26,11 +26,12 @@ class NetworkSpeedView : View {
 
     private val ovalPaint = Paint()
 
-    private val arcLines = Paint()
-
+    private val arcLine = Paint()
+    private val indicatorLine = Paint()
     private val ovalBackgroundShape = RectF()
 
-    private val scaleMarkSize = resources.displayMetrics.density * 14
+    private var lineSize = (resources.displayMetrics.density * 14).toInt()
+    private var indicatorSize = (resources.displayMetrics.density * 25).toInt()
 
     private val colors = Gradients.linesColor
 
@@ -60,9 +61,12 @@ class NetworkSpeedView : View {
         ovalPaint.style = Paint.Style.STROKE
         ovalPaint.strokeCap = Paint.Cap.ROUND
 
-        arcLines.alpha = 0.6.toInt()
-        arcLines.strokeWidth = 7f
-        arcLines.strokeCap = Paint.Cap.ROUND
+        arcLine.strokeWidth = 7f
+        arcLine.strokeCap = Paint.Cap.ROUND
+
+        indicatorLine.strokeWidth = 9f
+        indicatorLine.strokeCap = Paint.Cap.ROUND
+        indicatorLine.color = Color.WHITE
     }
 
 
@@ -97,39 +101,46 @@ class NetworkSpeedView : View {
         super.onDraw(canvas)
         Log.e("NSV: ", "onDraw called")
         canvas.drawArc(ovalBackgroundShape, 160f, 220f, false, ovalPaint)
-        drawArcLines(canvas)
-        drawIndicator(canvas, indicatorAngle, Color.BLACK)
+        drawLineOnCanvas(canvas)
+        drawIndicatorLine(canvas, indicatorAngle, indicatorLine)
     }
 
-    private fun drawArcLines(canvas: Canvas) {
+    private fun drawIndicatorLine(canvas: Canvas, angle: Int, paint: Paint) {
+        drawLine(canvas, angle, paint, indicatorSize, INDICATOR_RADIUS_MARGIN)
+    }
+
+    private fun drawLineOnCanvas(canvas: Canvas) {
+        arcLine.strokeWidth = 7f
         canvas.save()
         var counter = 46
         for (angle in 0..360) {
             if ((angle in 0..110 && angle % 5 == 0) || (angle in 250..360 && angle % 5 == 0)) {
                 Log.e("NSV:", "counter : $counter")
-                drawIndicator(canvas, angle, colors[counter])
+                arcLine.color = colors[counter]
+                drawLine(canvas, angle, arcLine, lineSize, LINE_RADIUS_MARGIN)
                 counter--
             }
         }
         canvas.restore()
     }
 
-    private fun drawIndicator(canvas: Canvas, angle: Int, color: Int) {
-        try {
-            arcLines.color = color
-        } catch (e: Exception) {
-            Log.e("NSV: ", "error ${e.message}")
-        }
+    private fun drawLine(
+        canvas: Canvas,
+        angle: Int,
+        paint: Paint,
+        lineSize: Int,
+        radiusMargin: Int
+    ) {
 
         Log.d("NSV: ", "draw indicator: $angle")
 
         val angleRadius = Math.toRadians(angle.toDouble())
-        val startX = centerX + (radius + 65) * Math.sin(angleRadius)
-        val startY = centerY - (radius + 65) * Math.cos(angleRadius)
-        val stopX = centerX + ((radius + 65) - scaleMarkSize) * Math.sin(angleRadius)
-        val stopY = centerY - ((radius + 65) - scaleMarkSize) * Math.cos(angleRadius)
+        val startX = centerX + (radius + radiusMargin) * Math.sin(angleRadius)
+        val startY = centerY - (radius + radiusMargin) * Math.cos(angleRadius)
+        val stopX = centerX + ((radius + radiusMargin) - lineSize) * Math.sin(angleRadius)
+        val stopY = centerY - ((radius + radiusMargin) - lineSize) * Math.cos(angleRadius)
         Log.e("NSV:", "draw line on angle: $angle, startX: $startX  startY: $startY  stopX: $stopX  stopY: $stopY")
-        canvas.drawLine(startX.toFloat(), startY.toFloat(), stopX.toFloat(), stopY.toFloat(), arcLines)
+        canvas.drawLine(startX.toFloat(), startY.toFloat(), stopX.toFloat(), stopY.toFloat(), paint)
     }
 
     fun refreshUi() {
