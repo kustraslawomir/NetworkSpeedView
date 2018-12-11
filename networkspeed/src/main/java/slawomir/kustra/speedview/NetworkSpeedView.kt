@@ -10,7 +10,6 @@ import slawomir.kustra.utils.Gradients
 import slawomir.kustra.utils.Utils.INDICATOR_RADIUS_MARGIN
 import slawomir.kustra.utils.Utils.LINE_RADIUS_MARGIN
 
-
 class NetworkSpeedView : View {
 
     private var viewWidth = 0
@@ -19,19 +18,13 @@ class NetworkSpeedView : View {
     private var centerY = 0
     private var radius: Double = 0.0
 
-    private var lineLeft = 0f
-    private var lineTop = 0f
-    private var lineRight = 0f
-    private var lineBottom = 0f
+    private lateinit var ovalPaint: Paint
+    private lateinit var arcLine: Paint
+    private lateinit var indicatorLine: Paint
+    private lateinit var ovalBackgroundShape: RectF
 
-    private val ovalPaint = Paint()
-
-    private val arcLine = Paint()
-    private val indicatorLine = Paint()
-    private val ovalBackgroundShape = RectF()
-
-    private var lineSize = (resources.displayMetrics.density * 14).toInt()
-    private var indicatorSize = (resources.displayMetrics.density * 25).toInt()
+    private var lineSize = (resources.displayMetrics.density * 18).toInt()
+    private var indicatorSize = (resources.displayMetrics.density * 28).toInt()
 
     private val colors = Gradients.linesColor
 
@@ -52,44 +45,21 @@ class NetworkSpeedView : View {
         init()
     }
 
-    private fun init() {
-        Log.d("NSV: ", "init")
-        colors.reverse()
-
-        ovalPaint.isAntiAlias = true
-        ovalPaint.strokeWidth = 70f
-        ovalPaint.style = Paint.Style.STROKE
-        ovalPaint.strokeCap = Paint.Cap.ROUND
-
-        arcLine.strokeWidth = 7f
-        arcLine.strokeCap = Paint.Cap.ROUND
-
-        indicatorLine.strokeWidth = 9f
-        indicatorLine.strokeCap = Paint.Cap.ROUND
-        indicatorLine.color = Color.parseColor("#607D8B")
-    }
-
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        viewHeight = h
-        viewWidth = w
+    override fun onSizeChanged(newWidth: Int, newHeight: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(newWidth, newHeight, oldw, oldh)
+        viewWidth = newWidth
+        viewHeight = newHeight
 
         radius = viewWidth / 2.5
         centerX = viewWidth / 2
         centerY = viewHeight / 2
-
-        lineLeft = centerX - radius.toFloat()
-        lineTop = centerY - radius.toFloat()
-        lineRight = centerX + radius.toFloat()
-        lineBottom = centerY + radius.toFloat()
 
         val s2 = (Math.min(viewWidth, viewHeight) - ovalPaint.strokeWidth) / 2f
 
         val positions = floatArrayOf(0.0f, 0.75f)
         val shader = SweepGradient(centerX.toFloat(), centerY.toFloat(), Gradients.arcGradientColors, positions)
         val matrix = Matrix()
-        matrix.setRotate(135f, centerX.toFloat(), centerY.toFloat())
+        matrix.setRotate(-100f, centerX.toFloat(), centerY.toFloat())
         shader.setLocalMatrix(matrix)
 
         ovalPaint.shader = shader
@@ -100,9 +70,30 @@ class NetworkSpeedView : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         Log.e("NSV: ", "onDraw called")
-        canvas.drawArc(ovalBackgroundShape, 160f, 220f, false, ovalPaint)
+        canvas.drawArc(ovalBackgroundShape, 270f, 240f, false, ovalPaint)
         drawLineOnCanvas(canvas)
         drawIndicatorLine(canvas, indicatorAngle, indicatorLine)
+        invalidate()
+    }
+
+    private fun init() {
+        Log.d("NSV: ", "init")
+        ovalBackgroundShape = RectF()
+
+        ovalPaint = Paint()
+        ovalPaint.isAntiAlias = true
+        ovalPaint.strokeWidth = 80f
+        ovalPaint.style = Paint.Style.STROKE
+        ovalPaint.strokeCap = Paint.Cap.ROUND
+
+        arcLine = Paint()
+        arcLine.strokeWidth = 9f
+        arcLine.strokeCap = Paint.Cap.ROUND
+
+        indicatorLine = Paint()
+        indicatorLine.strokeWidth = 9f
+        indicatorLine.strokeCap = Paint.Cap.ROUND
+        indicatorLine.color = Color.parseColor("#607D8B")
     }
 
     private fun drawIndicatorLine(canvas: Canvas, angle: Int, paint: Paint) {
@@ -112,9 +103,9 @@ class NetworkSpeedView : View {
     private fun drawLineOnCanvas(canvas: Canvas) {
         arcLine.strokeWidth = 7f
         canvas.save()
-        var counter = 46
-        for (angle in 0..360) {
-            if ((angle in 0..110 && angle % 5 == 0) || (angle in 250..360 && angle % 5 == 0)) {
+        var counter = colors.size - 1
+        for (angle in 0..240) {
+            if ((angle in 0..240 && angle % 5 == 0) && counter >= 0) {
                 Log.e("NSV:", "counter : $counter")
                 arcLine.color = colors[counter]
                 drawLine(canvas, angle, arcLine, lineSize, LINE_RADIUS_MARGIN)

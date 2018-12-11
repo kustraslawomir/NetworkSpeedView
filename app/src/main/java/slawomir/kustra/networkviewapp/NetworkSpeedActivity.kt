@@ -21,12 +21,12 @@ class NetworkSpeedActivity : AppCompatActivity() {
                 networkSpeedView.indicatorAngle = angle
                 networkSpeedView.refreshUi()
                 angle += 5
-                if (angle > 360)
+                if (angle >= 245)
                     angle = 0
                 handler.postDelayed(
-                    this, 100
+                    this, 50
                 )
             }
-        }, 5000)
+        }, 1000)
     }
 }
